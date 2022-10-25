@@ -88,4 +88,4 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-#Testar fazer um for pela quantidade e fazer a marcação de quando os processos vão chegar!! De modo a fazer o "relogio"
+//Testar fazer um for pela quantidade e fazer a marcação de quando os processos vão chegar!! De modo a fazer o "relogio"
