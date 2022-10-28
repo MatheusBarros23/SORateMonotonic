@@ -42,7 +42,7 @@ rule C_EXECUTABLE_LINKER__ratemonotonic_Debug
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = "C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\mathe\CLionProjects\ratemonotonic -BC:\Users\mathe\CLionProjects\ratemonotonic\cmake-build-debug
+  command = "C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\mathe\Downloads\FDS-Projeto\InfraSO\shell\SORateMonotonic -BC:\Users\mathe\Downloads\FDS-Projeto\InfraSO\shell\SORateMonotonic\cmake-build-debug
   description = Re-running CMake...
   generator = 1
 

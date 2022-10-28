@@ -39,13 +39,13 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = C$:/Users/mathe/CLionProjects/ratemonotonic/cmake-build-debug/
+cmake_ninja_workdir = C$:/Users/mathe/Downloads/FDS-Projeto/InfraSO/shell/SORateMonotonic/cmake-build-debug/
 
 #############################################
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\Users\mathe\CLionProjects\ratemonotonic\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\mathe\CLionProjects\ratemonotonic -BC:\Users\mathe\CLionProjects\ratemonotonic\cmake-build-debug"
+  COMMAND = cmd.exe /C "cd /D C:\Users\mathe\Downloads\FDS-Projeto\InfraSO\shell\SORateMonotonic\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\mathe\Downloads\FDS-Projeto\InfraSO\shell\SORateMonotonic -BC:\Users\mathe\Downloads\FDS-Projeto\InfraSO\shell\SORateMonotonic\cmake-build-debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -61,8 +61,8 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 
 build cmake_object_order_depends_target_ratemonotonic: phony || CMakeFiles/ratemonotonic.dir
 
-build CMakeFiles/ratemonotonic.dir/main.c.obj: C_COMPILER__ratemonotonic_Debug C$:/Users/mathe/CLionProjects/ratemonotonic/main.c || cmake_object_order_depends_target_ratemonotonic
-  DEP_FILE = CMakeFiles\ratemonotonic.dir\main.c.obj.d
+build CMakeFiles/ratemonotonic.dir/rate.c.obj: C_COMPILER__ratemonotonic_Debug C$:/Users/mathe/Downloads/FDS-Projeto/InfraSO/shell/SORateMonotonic/rate.c || cmake_object_order_depends_target_ratemonotonic
+  DEP_FILE = CMakeFiles\ratemonotonic.dir\rate.c.obj.d
   FLAGS = -g -std=gnu99
   OBJECT_DIR = CMakeFiles\ratemonotonic.dir
   OBJECT_FILE_DIR = CMakeFiles\ratemonotonic.dir
@@ -77,7 +77,7 @@ build CMakeFiles/ratemonotonic.dir/main.c.obj: C_COMPILER__ratemonotonic_Debug C
 #############################################
 # Link the executable ratemonotonic.exe
 
-build ratemonotonic.exe: C_EXECUTABLE_LINKER__ratemonotonic_Debug CMakeFiles/ratemonotonic.dir/main.c.obj
+build ratemonotonic.exe: C_EXECUTABLE_LINKER__ratemonotonic_Debug CMakeFiles/ratemonotonic.dir/rate.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\ratemonotonic.dir
@@ -93,7 +93,7 @@ build ratemonotonic.exe: C_EXECUTABLE_LINKER__ratemonotonic_Debug CMakeFiles/rat
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\Users\mathe\CLionProjects\ratemonotonic\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D C:\Users\mathe\Downloads\FDS-Projeto\InfraSO\shell\SORateMonotonic\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -110,7 +110,7 @@ build ratemonotonic: phony ratemonotonic.exe
 # =============================================================================
 
 #############################################
-# Folder: C:/Users/mathe/CLionProjects/ratemonotonic/cmake-build-debug
+# Folder: C:/Users/mathe/Downloads/FDS-Projeto/InfraSO/shell/SORateMonotonic/cmake-build-debug
 
 build all: phony ratemonotonic.exe
 
