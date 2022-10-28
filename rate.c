@@ -19,10 +19,20 @@ FILE *pnt;
 struct ProcStruct
 {
     int size;
-    int procID; //QUANDO PRINTAR COLOCAR O T antes do ID!!
+    int procID; //QUANDO PRINTAR COLOCAR O T antes do ID!! VERIFICAR ISSO
     int periodT;
     int execT;
+
+   //att to save timeStamps
+    int holdT;
+    int killedT;
+    int lostT;
     int waitT;
+
+   //att to store limits
+    int qtdExec;
+    int qtdlost;
+    int qtdkilled;
 };
 struct ProcStruct procStruct[MAX_CMDS];
 
@@ -30,6 +40,7 @@ int periodLimit=0;
 char *args_proc[MAX_LINE/2];
 char *arrayProcID[MAX_LINE/2];
 int Time=0;
+
 
 int should_run=1;
 
@@ -63,11 +74,33 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort 
     }
 }
 
-int executeTime(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
-    //
+int executeByRate(struct ProcStruct proc[], int procCount){
+    while (should_run==1){
+        if ((Time % proc[0].periodT == 0) && (Time + proc[0].execT > periodLimit)){ //(Time % proc[0].periodT == 0) - caso chegue o tempo para executar o de maior prioridade!
+                                                                      //(Time + proc[0].execT) - caso chegue o tempo e não consiga completar, pq acabou o tempo!!
+                Time += proc[0].execT;
+                proc[0].qtdExec++;
+        }else if((Time % proc[0].periodT == 0) && Time + proc[0].execT <= periodLimit){
+            Time += proc[0].execT;
+            proc[0].qtdkilled++;
+        }
+        Time++;
+    }
     return 0;
 }
 
+int lostDeadline(struct ProcStruct proc[], int procCount){
+    return 0;
+}
+
+int completeExec(struct ProcStruct proc[], int procCount){
+    return 0;
+}
+
+int killed(struct ProcStruct proc[], int procCount){
+
+    return 0;
+}
 int main(int argc, char* argv[]) {
 
     if(argc>1&&argc<=2) {
@@ -123,7 +156,6 @@ int main(int argc, char* argv[]) {
                 free(procArray);
             }
         }
-
         fclose(pnt);
 
         sortByArrivalT(procStruct, procCount);
@@ -136,15 +168,15 @@ int main(int argc, char* argv[]) {
             printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
         }*/
 
-        while (Time <= periodLimit && should_run==1){
-
-            if (Time>periodLimit){
-                printf("Tratar quando passa direto! para pegar o que sobra!!");
-            }
-        }
-
-    //Error referentes ao argvs
+//Prints:
+    //EXECUTION BY RATE
+        executeByRate(procStruct,procCount);
+    //LOST DEADLINES
+    //COMPLETE EXECUTION
+    //KILLED
     }
+
+//Error referentes ao argvs
     else if (argc == 1) {
         printf("Please, inform some input file\n");
     } else if (argc > 2) {
