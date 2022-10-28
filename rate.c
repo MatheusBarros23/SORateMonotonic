@@ -10,10 +10,11 @@ FILE *pnt;
 
 #define MAX_LINE 20
 #define MAX_CMDS 20
-#define F "F"
-#define L "L"
-#define K "K"
-#define H "H"
+#define FINISHED 'F'
+#define LOST 'L'
+#define KILLED 'K'
+#define HOLD 'H'
+#define EXECUTING 'E'
 
 
 struct ProcStruct
@@ -22,6 +23,8 @@ struct ProcStruct
     int procID; //QUANDO PRINTAR COLOCAR O T antes do ID!! VERIFICAR ISSO
     int periodT;
     int execT;
+
+    int state;
 
    //att to save timeStamps
     int holdT;
@@ -74,18 +77,27 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort 
     }
 }
 
-int executeByRate(struct ProcStruct proc[], int procCount){
-    while (should_run==1){
-        if ((Time % proc[0].periodT == 0) && (Time + proc[0].execT > periodLimit)){ //(Time % proc[0].periodT == 0) - caso chegue o tempo para executar o de maior prioridade!
-                                                                      //(Time + proc[0].execT) - caso chegue o tempo e não consiga completar, pq acabou o tempo!!
-                Time += proc[0].execT;
-                proc[0].qtdExec++;
-        }else if((Time % proc[0].periodT == 0) && Time + proc[0].execT <= periodLimit){
-            Time += proc[0].execT;
-            proc[0].qtdkilled++;
-        }
-        Time++;
+void printStruct(struct ProcStruct proc[], int procCount){
+    //verificar a struct
+    for (int i = 0; i < procCount; ++i) {
+        printf("procStruct[%d].procID: T%d\n",i,procStruct[i].procID);
+        printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
+        printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
+        printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
+        printf("procStruct[%d].qtdExec: %d\n",i,procStruct[i].qtdExec);
     }
+}
+
+int executeByRate(struct ProcStruct proc[], int procCount){
+        //fixar o tempo do primeiro! Depois fazer um padrao!!
+        for (int i = 0; i < procCount; ++i) {
+           if(i==0 && (Time == 0 || Time % proc[0].periodT == 0) ){
+               Time += proc[0].execT;
+               proc[0].qtdExec++;
+           }else{ //mudar quando tiver outros!!
+               Time++;
+           }
+        }
     return 0;
 }
 
@@ -152,6 +164,10 @@ int main(int argc, char* argv[]) {
                 procStruct[procs].procID = atoi(procArray[0]);
                 procStruct[procs].periodT = atoi(procArray[1]);
                 procStruct[procs].execT = atoi(procArray[2]);
+                procStruct[procs].state = HOLD;
+                if(procStruct[procs].state==HOLD){
+                    procStruct[procs].waitT=procStruct[procs].execT;
+                }
                 procs++;
                 free(procArray);
             }
@@ -161,16 +177,17 @@ int main(int argc, char* argv[]) {
         sortByArrivalT(procStruct, procCount);
 
         //verificar a struct
-        /*for (int i = 0; i < 3; ++i) {
-            printf("procStruct[%d].procID: T%d\n",i,procStruct[i].procID);
-            printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
-            printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
-            printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
-        }*/
+        printStruct(procStruct,procCount);
 
 //Prints:
     //EXECUTION BY RATE
-        executeByRate(procStruct,procCount);
+        while (should_run==1 && Time <=periodLimit){
+            //fixar o tempo do primeiro! Depois fazer um padrao!!
+            executeByRate(procStruct,procCount);
+            printf("--\n");
+            printStruct(procStruct,procCount);
+       }
+
     //LOST DEADLINES
     //COMPLETE EXECUTION
     //KILLED
