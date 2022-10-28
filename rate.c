@@ -31,6 +31,8 @@ char *args_proc[MAX_LINE/2];
 char *arrayProcID[MAX_LINE/2];
 int Time=0;
 
+int should_run=1;
+
 char **splitString(char *string, int *cmdCount) {
     char delim =' ';
     *cmdCount =1;
@@ -68,7 +70,7 @@ int executeTime(struct ProcStruct proc[], int procCount){  //Selection Sort para
 
 int main(int argc, char* argv[]) {
 
-    while(argc>1&&argc<=2) {
+    if(argc>1&&argc<=2) {
         printf("Get inputs in file: %s\n", argv[1]);
 
         pnt = fopen(argv[1], "r");
@@ -122,55 +124,32 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        //Verificar os Procs
-        for (int i = 0; i < 3; ++i) {
-            //printf("procStruct[0].procID: T%d\n",procStruct[i].procID);
-        }
-        //Verificar os periodT
-        for (int i = 0; i < 3; ++i) {
-            //  printf("procStruct[0].procID: %d\n",procStruct[i].periodT);
-        }
-        //Verificar os execT
-        for (int i = 0; i < 3; ++i) {
-            // printf("procStruct[0].procID: %d\n",procStruct[i].execT);
-        }
         fclose(pnt);
 
         sortByArrivalT(procStruct, procCount);
 
-        //ORDENADA!! AGORA É EXECUTAR!!!
-        int temp;
-        //programa
-        //De qualquer forma, o 1 sempre vai executar o tempo dele, afinal, tem a maior prioridade
-        while (!(Time > periodLimit)){
-        //REFAZER ESSA MERDA, PENSAR NUMA LOGICA LEGAL!! KRAI!
-            if (Time <= periodLimit && procStruct[0].periodT>=Time) {
-                Time = Time + procStruct[0].execT;
-                printf("[T%d] for %d units - %s\n", procStruct[0].procID, procStruct[0].execT, F);
-                procStruct[0].waitT=0;
-                temp = Time;
-                printf("Time: %s\n");
-            }else if(temp == Time){
-                Time++;
-            }
-            else{
-                printf("Time else: %s\n");
-                //quando o Time for maior dq o limite informado, encerra!!
-                printf("[T%d] for %d units - %s\n", procStruct[0].procID, procStruct[0], K);
-                printf("Tempo Expirou!\n");
-                exit(0); //mudar para condição do WHILE!!
+        //verificar a struct
+        /*for (int i = 0; i < 3; ++i) {
+            printf("procStruct[%d].procID: T%d\n",i,procStruct[i].procID);
+            printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
+            printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
+            printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
+        }*/
+
+        while (Time <= periodLimit && should_run==1){
+
+            if (Time>periodLimit){
+                printf("Tratar quando passa direto! para pegar o que sobra!!");
             }
         }
-     //sair, não loop!
-        //exit(0);
+
+    //Error referentes ao argvs
     }
-//Error referentes ao argvs
-    if(argc==1){
+    else if (argc == 1) {
         printf("Please, inform some input file\n");
-    }else if(argc>2){
+    } else if (argc > 2) {
         printf("Sorry, but more files were informed than supported\n");
     }
-
     return 0;
 }
 //Create a array list to store all necessary information!!
