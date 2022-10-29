@@ -207,12 +207,18 @@ int main(int argc, char* argv[]) {
                                 printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
                                 //verificar novo arrival!! COM WAITTIME
                             }
-                            else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0){
-                                lostTime = procStruct[0].waitT;
-                                printf("LOST TIME FOR T%d : %d\n",procStruct[0].procID, lostTime);
-                                lostTime=0;
-                                procStruct[0].waitT = procStruct[0].execT;
-                            }else if(Time >= periodLimit &&  procStruct[0].waitT>0){
+                            else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 || checkAllExecute(procStruct,procCount)!=0){
+                                //PROB AQUI!!
+                                for (int j = 0; j < procCount; ++j) {
+                                    if(Time%procStruct[j].periodT==0 && procStruct[j].waitT>0 && (procStruct[j].waitT!=procStruct[j].execT)){ //prob quando um proc nunca chega a ser executado! :/
+                                        lostTime = procStruct[j].waitT;
+                                        printf("LOST TIME FOR T%d : %d\n",procStruct[j].procID, lostTime);
+                                        lostTime=0;
+                                        procStruct[j].waitT = procStruct[j].execT;
+                                        j++;
+                                    }
+                                }
+                            }else if(Time >= periodLimit && procStruct[0].waitT>0){
                                 killTime = procStruct[0].waitT;
                                 printf("Kill TIME FOR T%d : %d\n",procStruct[0].procID, killTime);
                                 killTime=0;
