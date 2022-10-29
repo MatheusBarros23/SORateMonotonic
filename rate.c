@@ -47,6 +47,7 @@ int TimeIdle=0;
 int stopExec=0;
 int notIdle=0;
 int lostTime=0;
+int temp=0;
 
 
 int should_run=1;
@@ -85,7 +86,7 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort 
     }
 }
 
-int CheckAllExecute(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
+int checkAllExecute(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
     for (int i = 0; i < procCount; ++i) {
         if(procStruct[i].waitT!=0){
             return i;
@@ -193,24 +194,23 @@ int main(int argc, char* argv[]) {
                     TimeIdle=0;
                 }
                 if(procStruct[0].waitT + Time <= periodLimit || procStruct[0].waitT>0){ //para quando conseguir executar normal (sem deadline, por enquanto)
-                    while(procStruct[0].waitT+1 <= procStruct[CheckAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
+                  //Só entra enquanto for menor dq o periodLimit! Vou fazer o tratamento de quanto falta, no else if()
+                    while(procStruct[0].waitT+1 <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
                         Time++;
                         procStruct[0].waitT--;
                         printf("\tTIME executando: %d\n",Time);
                         for (int i = 1; i < procCount; ++i) {
                             printf("\tTIME FOR CONDICIONAL: %d\n",Time);
-                           // printf("\tTime%%procStruct[i].periodT: %d\n",Time%procStruct[i].periodT);
-                           // printf("\tprocStruct[i].periodT: %d\n",procStruct[i].periodT);
                             if(procStruct[0].periodT > procStruct[i].periodT && Time%procStruct[i].periodT==0 ){ //Caso executando encontre um de prioridade MAIOR!
                                 procStruct[i].waitT = procStruct[i].execT;
                                 stopExec=1;
-
+                                printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
                                 //verificar novo arrival!! DEADLINE
                             }else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 /*PERIODLIMIT TBM, para saber quando lost ou Killed */){
                                 lostTime = procStruct[0].waitT;
                                 printf("LOST TIME FOR T%d : %d\n",procStruct[0].procID, lostTime);
                                 lostTime=0;
-                                procStruct[i].waitT = procStruct[i].execT;
+                                procStruct[0].waitT = procStruct[0].execT;
                             }
                         }
                         if(stopExec==1){
@@ -218,17 +218,23 @@ int main(int argc, char* argv[]) {
                             break;
                         }
                     }
-                }else if(procStruct[0].waitT<=0){ //caso o da vez esteja vazio
+                }else if(procStruct[0].waitT<=0 || procStruct[0].waitT + Time <= periodLimit){ //caso o da vez esteja vazio
                     procStruct[0].waitT = procStruct[0].execT;
                     stopExec=0;
+                    printf("ENTREI: VAZIO=%d\n",stopExec);
                 }
                 printStruct(procStruct,procCount);
             }
             else if(Time >= periodLimit){
                 should_run=2;
-            }else if(notIdle==1){ //idle time!!
+            }else if(notIdle==1 || checkAllExecute(procStruct,procCount)==0) { //idle time!! (all .waitT=0 and not waiting)
+                printf("TIME AFTER IDLE: %d\n",Time);
                 Time++;
-                printf("TIME: %d\n",Time);
+
+                if(Time-1 % procStruct[0].periodT == 0){
+                    printf("CHEGOU NOVO: %d",procStruct[0].procID);
+                }
+
             }
         }
     }
@@ -246,8 +252,8 @@ int main(int argc, char* argv[]) {
 
 //time + execT == 165 - KILL
 
-//AINDA FALTA DEADLINE!!
+/*AINDA FALTA O: IDLE
+                 Killed
+*/
 
-//LOST DEADLINES
-//COMPLETE EXECUTION
-//KILLED
+/*E Os prints formatados!!*/
