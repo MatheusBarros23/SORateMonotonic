@@ -47,7 +47,9 @@ int TimeIdle=0;
 int stopExec=0;
 int notIdle=0;
 int lostTime=0;
+int killTime=0;
 int temp=0;
+int auxCheckExec;
 
 
 int should_run=1;
@@ -107,13 +109,6 @@ void printStruct(struct ProcStruct proc[], int procCount){
         //printf("procStruct[%d].qtdExec: %d\n",i,procStruct[i].qtdExec);
     }
 }
-
-int executeByRate(struct ProcStruct proc[], int procCount){
-        //fixar o tempo do primeiro! Depois fazer um padrao!!
-
-    return 0;
-}
-
 
 
 int main(int argc, char* argv[]) {
@@ -189,13 +184,18 @@ int main(int argc, char* argv[]) {
        //execution!
             if (procStruct[0].waitT>0 || (Time%procStruct[0].periodT==0)){
                 printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
-                if(TimeIdle!=0){
-                    printf("> TIMEIdle: %d\n",Time);
-                    TimeIdle=0;
+
+
+                for (int i = 0; i < procCount; ++i) {
+                    if ((Time % procStruct[i].periodT == 0) && procStruct[i].waitT == 0 && checkAllExecute(procStruct,procCount)==0) { //creio que o erro possa estar aqui!!
+                        procStruct[i].waitT = procStruct[i].execT;
+                    }
                 }
+
                 if(procStruct[0].waitT + Time <= periodLimit || procStruct[0].waitT>0){ //para quando conseguir executar normal (sem deadline, por enquanto)
                   //Só entra enquanto for menor dq o periodLimit! Vou fazer o tratamento de quanto falta, no else if()
-                    while(procStruct[0].waitT+1 <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
+                  while(procStruct[0].waitT+1 <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
+                      printf("\t\tENTREI\n");
                         Time++;
                         procStruct[0].waitT--;
                         printf("\tTIME executando: %d\n",Time);
@@ -205,12 +205,18 @@ int main(int argc, char* argv[]) {
                                 procStruct[i].waitT = procStruct[i].execT;
                                 stopExec=1;
                                 printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
-                                //verificar novo arrival!! DEADLINE
-                            }else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 /*PERIODLIMIT TBM, para saber quando lost ou Killed */){
+                                //verificar novo arrival!! COM WAITTIME
+                            }
+                            else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0){
                                 lostTime = procStruct[0].waitT;
                                 printf("LOST TIME FOR T%d : %d\n",procStruct[0].procID, lostTime);
                                 lostTime=0;
                                 procStruct[0].waitT = procStruct[0].execT;
+                            }else if(Time >= periodLimit &&  procStruct[0].waitT>0){
+                                killTime = procStruct[0].waitT;
+                                printf("Kill TIME FOR T%d : %d\n",procStruct[0].procID, killTime);
+                                killTime=0;
+                                should_run=2;
                             }
                         }
                         if(stopExec==1){
@@ -221,7 +227,7 @@ int main(int argc, char* argv[]) {
                 }else if(procStruct[0].waitT<=0 || procStruct[0].waitT + Time <= periodLimit){ //caso o da vez esteja vazio
                     procStruct[0].waitT = procStruct[0].execT;
                     stopExec=0;
-                    printf("ENTREI: VAZIO=%d\n",stopExec);
+                  //  printf("ENTREI: VAZIO=%d\n",stopExec);
                 }
                 printStruct(procStruct,procCount);
             }
@@ -230,11 +236,6 @@ int main(int argc, char* argv[]) {
             }else if(notIdle==1 || checkAllExecute(procStruct,procCount)==0) { //idle time!! (all .waitT=0 and not waiting)
                 printf("TIME AFTER IDLE: %d\n",Time);
                 Time++;
-
-                if(Time-1 % procStruct[0].periodT == 0){
-                    printf("CHEGOU NOVO: %d",procStruct[0].procID);
-                }
-
             }
         }
     }
