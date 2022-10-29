@@ -77,6 +77,8 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort 
     }
 }
 
+//preciso PROCURAR pelo maior prioridade com tempo de execução maior que 0
+
 void printStruct(struct ProcStruct proc[], int procCount){
     //verificar a struct
     for (int i = 0; i < procCount; ++i) {
@@ -90,29 +92,12 @@ void printStruct(struct ProcStruct proc[], int procCount){
 
 int executeByRate(struct ProcStruct proc[], int procCount){
         //fixar o tempo do primeiro! Depois fazer um padrao!!
-        for (int i = 0; i < procCount; ++i) {
-           if(i==0 && (Time == 0 || Time % proc[0].periodT == 0) ){
-               Time += proc[0].execT;
-               proc[0].qtdExec++;
-           }else{ //mudar quando tiver outros!!
-               Time++;
-           }
-        }
-    return 0;
-}
-
-int lostDeadline(struct ProcStruct proc[], int procCount){
-    return 0;
-}
-
-int completeExec(struct ProcStruct proc[], int procCount){
-    return 0;
-}
-
-int killed(struct ProcStruct proc[], int procCount){
 
     return 0;
 }
+
+
+
 int main(int argc, char* argv[]) {
 
     if(argc>1&&argc<=2) {
@@ -181,16 +166,21 @@ int main(int argc, char* argv[]) {
 
 //Prints:
     //EXECUTION BY RATE
-        while (should_run==1 && Time <=periodLimit){
-            //fixar o tempo do primeiro! Depois fazer um padrao!!
-            executeByRate(procStruct,procCount);
-            printf("--\n");
-            printStruct(procStruct,procCount);
-       }
+        while(should_run==1){
+             for (int i = 0; i < procCount; ++i) {
+                /*
+                 TEMPO % PERIODO == 0 AND TEMPEXEC>0
+                    EXECUTAR!
+                 */
+             }
 
-    //LOST DEADLINES
-    //COMPLETE EXECUTION
-    //KILLED
+        if(Time >= 165){
+            should_run=2;
+        }
+
+        printf("TIME: %d\n",Time);
+        Time++;
+        }
     }
 
 //Error referentes ao argvs
@@ -201,7 +191,12 @@ int main(int argc, char* argv[]) {
     }
     return 0;
 }
-//Create a array list to store all necessary information!!
+
 //Testar fazer um for pela quantidade e fazer a marcação de quando os processos vão chegar!! De modo a fazer o "relogio"
 
 //time + execT == 165 - KILL
+
+
+//LOST DEADLINES
+//COMPLETE EXECUTION
+//KILLED
