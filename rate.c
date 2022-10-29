@@ -45,6 +45,8 @@ char *arrayProcID[MAX_LINE/2];
 int Time=0;
 int TimeIdle=0;
 int stopExec=0;
+int notIdle=0;
+int lostTime=0;
 
 
 int should_run=1;
@@ -197,11 +199,18 @@ int main(int argc, char* argv[]) {
                         printf("\tTIME executando: %d\n",Time);
                         for (int i = 1; i < procCount; ++i) {
                             printf("\tTIME FOR CONDICIONAL: %d\n",Time);
-                            printf("\tTime%%procStruct[i].periodT: %d\n",Time%procStruct[i].periodT);
-                            printf("\tprocStruct[i].periodT: %d\n",procStruct[i].periodT);
-                            if(procStruct[0].periodT > procStruct[i].periodT && Time%procStruct[i].periodT==0){ //Caso executando encontre um de prioridade MAIOR!
+                           // printf("\tTime%%procStruct[i].periodT: %d\n",Time%procStruct[i].periodT);
+                           // printf("\tprocStruct[i].periodT: %d\n",procStruct[i].periodT);
+                            if(procStruct[0].periodT > procStruct[i].periodT && Time%procStruct[i].periodT==0 ){ //Caso executando encontre um de prioridade MAIOR!
                                 procStruct[i].waitT = procStruct[i].execT;
                                 stopExec=1;
+
+                                //verificar novo arrival!! DEADLINE
+                            }else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 /*PERIODLIMIT TBM, para saber quando lost ou Killed */){
+                                lostTime = procStruct[0].waitT;
+                                printf("LOST TIME FOR T%d : %d\n",procStruct[0].procID, lostTime);
+                                lostTime=0;
+                                procStruct[i].waitT = procStruct[i].execT;
                             }
                         }
                         if(stopExec==1){
@@ -217,7 +226,7 @@ int main(int argc, char* argv[]) {
             }
             else if(Time >= periodLimit){
                 should_run=2;
-            }else{ //idle time!!
+            }else if(notIdle==1){ //idle time!!
                 Time++;
                 printf("TIME: %d\n",Time);
             }
