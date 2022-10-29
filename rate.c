@@ -43,6 +43,8 @@ int periodLimit=0;
 char *args_proc[MAX_LINE/2];
 char *arrayProcID[MAX_LINE/2];
 int Time=0;
+int TimeIdle=0;
+int stopExec=0;
 
 
 int should_run=1;
@@ -68,13 +70,26 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort 
     struct ProcStruct temp;
     for (int i = 0; i < procCount-1; ++i) {
         for (int j = i+1; j < procCount; ++j) {
-            if(proc[i].periodT > proc[j].periodT){
+            if(proc[i].periodT > proc[j].periodT && proc[i].waitT>0){
                 temp = proc[i];
                 proc[i] = proc[j];
                 proc[j] = temp;
+            } else if(proc[i].waitT<=0){
+                temp = proc[j];
+                proc[j] = proc[i];
+                proc[i] = temp;
             }
         }
     }
+}
+
+int CheckAllExecute(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
+    for (int i = 0; i < procCount; ++i) {
+        if(procStruct[i].waitT!=0){
+            return i;
+        }
+    }
+    return 0;
 }
 
 //preciso PROCURAR pelo maior prioridade com tempo de execução maior que 0
@@ -86,7 +101,7 @@ void printStruct(struct ProcStruct proc[], int procCount){
         printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
         printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
         printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
-        printf("procStruct[%d].qtdExec: %d\n",i,procStruct[i].qtdExec);
+        //printf("procStruct[%d].qtdExec: %d\n",i,procStruct[i].qtdExec);
     }
 }
 
@@ -164,22 +179,48 @@ int main(int argc, char* argv[]) {
         //verificar a struct
         printStruct(procStruct,procCount);
 
-//Prints:
     //EXECUTION BY RATE
         while(should_run==1){
-             for (int i = 0; i < procCount; ++i) {
-                /*
-                 TEMPO % PERIODO == 0 AND TEMPEXEC>0
-                    EXECUTAR!
-                 */
-             }
-
-        if(Time >= 165){
-            should_run=2;
-        }
-
-        printf("TIME: %d\n",Time);
-        Time++;
+            //para saber qual pode ser executado agora!! (sempre o primeiro!)
+            sortByArrivalT(procStruct, procCount);
+       //execution!
+            if (procStruct[0].waitT>0 || (Time%procStruct[0].periodT==0)){
+                printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
+                if(TimeIdle!=0){
+                    printf("> TIMEIdle: %d\n",Time);
+                    TimeIdle=0;
+                }
+                if(procStruct[0].waitT + Time <= periodLimit || procStruct[0].waitT>0){ //para quando conseguir executar normal (sem deadline, por enquanto)
+                    while(procStruct[0].waitT+1 <= procStruct[CheckAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
+                        Time++;
+                        procStruct[0].waitT--;
+                        printf("\tTIME executando: %d\n",Time);
+                        for (int i = 1; i < procCount; ++i) {
+                            printf("\tTIME FOR CONDICIONAL: %d\n",Time);
+                            printf("\tTime%%procStruct[i].periodT: %d\n",Time%procStruct[i].periodT);
+                            printf("\tprocStruct[i].periodT: %d\n",procStruct[i].periodT);
+                            if(procStruct[0].periodT > procStruct[i].periodT && Time%procStruct[i].periodT==0){ //Caso executando encontre um de prioridade MAIOR!
+                                procStruct[i].waitT = procStruct[i].execT;
+                                stopExec=1;
+                            }
+                        }
+                        if(stopExec==1){
+                            //printar o que ficou em HOLD!!
+                            break;
+                        }
+                    }
+                }else if(procStruct[0].waitT<=0){ //caso o da vez esteja vazio
+                    procStruct[0].waitT = procStruct[0].execT;
+                    stopExec=0;
+                }
+                printStruct(procStruct,procCount);
+            }
+            else if(Time >= periodLimit){
+                should_run=2;
+            }else{ //idle time!!
+                Time++;
+                printf("TIME: %d\n",Time);
+            }
         }
     }
 
@@ -196,6 +237,7 @@ int main(int argc, char* argv[]) {
 
 //time + execT == 165 - KILL
 
+//AINDA FALTA DEADLINE!!
 
 //LOST DEADLINES
 //COMPLETE EXECUTION
