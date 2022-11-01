@@ -72,14 +72,14 @@ char **splitString(char *string, int *cmdCount) {
 }
 
 void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
-    struct ProcStruct temp;
+    struct ProcStruct temp;                                 //ENTENDER QUEM EH O i e o J!!
     for (int i = 0; i < procCount-1; ++i) {
-        for (int j = i+1; j < procCount; ++j) {
+        for (int j = i+1; j < procCount; ++j) { //FAZER% ISSO SEPARADO!! NAO DA NO MESMO CAMPO!!
             if(proc[i].periodT > proc[j].periodT && proc[i].waitT>0){
                 temp = proc[i];
                 proc[i] = proc[j];
                 proc[j] = temp;
-            } else if(proc[i].waitT<=0){
+            }else if(proc[i].waitT<=0){
                 temp = proc[j];
                 proc[j] = proc[i];
                 proc[i] = temp;
@@ -243,9 +243,9 @@ int main(int argc, char* argv[]) {
                 printf("TIME AFTER IDLE: %d\n",Time);
                 Time++;
             }
+
         }
     }
-
 //Error referentes ao argvs
     else if (argc == 1) {
         printf("Please, inform some input file\n");
