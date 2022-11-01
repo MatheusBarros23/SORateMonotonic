@@ -26,13 +26,13 @@ struct ProcStruct
 
     int state;
 
-   //att to save timeStamps
+    //att to save timeStamps
     int holdT;
     int killedT;
     int lostT;
     int waitT;
 
-   //att to store limits
+    //att to store limits
     int qtdExec;
     int qtdlost;
     int qtdkilled;
@@ -72,14 +72,14 @@ char **splitString(char *string, int *cmdCount) {
 }
 
 void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
-    struct ProcStruct temp;                                 //ENTENDER QUEM EH O i e o J!!
+    struct ProcStruct temp;
     for (int i = 0; i < procCount-1; ++i) {
-        for (int j = i+1; j < procCount; ++j) { //FAZER% ISSO SEPARADO!! NAO DA NO MESMO CAMPO!!
+        for (int j = i+1; j < procCount; ++j) {
             if(proc[i].periodT > proc[j].periodT && proc[i].waitT>0){
                 temp = proc[i];
                 proc[i] = proc[j];
                 proc[j] = temp;
-            }else if(proc[i].waitT<=0){
+            } else if(proc[i].waitT<=0){
                 temp = proc[j];
                 proc[j] = proc[i];
                 proc[i] = temp;
@@ -177,13 +177,14 @@ int main(int argc, char* argv[]) {
         //verificar a struct
         printStruct(procStruct,procCount);
 
-    //EXECUTION BY RATE
+        printf("EXECUTION BY RATE\n");
+        //EXECUTION BY RATE
         while(should_run==1){
             //para saber qual pode ser executado agora!! (sempre o primeiro!)
             sortByArrivalT(procStruct, procCount);
-       //execution!
+            //execution!
             if (procStruct[0].waitT>0 || (Time%procStruct[0].periodT==0)){
-                printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
+              //  printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
 
 
                 for (int i = 0; i < procCount; ++i) {
@@ -193,38 +194,60 @@ int main(int argc, char* argv[]) {
                 }
 
                 if(procStruct[0].waitT + Time <= periodLimit || procStruct[0].waitT>0){ //para quando conseguir executar normal (sem deadline, por enquanto)
-                  //Só entra enquanto for menor dq o periodLimit! Vou fazer o tratamento de quanto falta, no else if()
-                  while(procStruct[0].waitT+1 <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
-                      printf("\t\tENTREI\n");
+                    //Só entra enquanto for menor dq o periodLimit! Vou fazer o tratamento de quanto falta, no else if()
+                    while(procStruct[0].waitT+1 <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
+                      //  printf("\t\tENTREI\n");
                         Time++;
+                        notIdle=0;
+                        if(TimeIdle>0 && notIdle==0){
+                            printf("idle for %d units\n",TimeIdle);
+                        }
+                        TimeIdle=0;
                         procStruct[0].waitT--;
-                        printf("\tTIME executando: %d\n",Time);
+                       // printf("\tTIME executando: %d\n",Time);
+
+                        //for para verificar um de prioridade MAIOR!
                         for (int i = 1; i < procCount; ++i) {
-                            printf("\tTIME FOR CONDICIONAL: %d\n",Time);
+                         //   printf("\tTIME FOR CONDICIONAL: %d\n",Time);
                             if(procStruct[0].periodT > procStruct[i].periodT && Time%procStruct[i].periodT==0 ){ //Caso executando encontre um de prioridade MAIOR!
                                 procStruct[i].waitT = procStruct[i].execT;
                                 stopExec=1;
-                                printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
-                                //verificar novo arrival!! COM WAITTIME
+                          //      printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
+                             //chegou prioridade! e guarda o wait!!
+                                printf("[T%d] for %d units - H\n",procStruct[0].procID,procStruct[0].waitT);
+                          //verificar novo arrival!! COM WAITTIME
                             }
                             else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 || checkAllExecute(procStruct,procCount)!=0){
                                 //PROB AQUI!!
                                 for (int j = 0; j < procCount; ++j) {
                                     if(Time%procStruct[j].periodT==0 && procStruct[j].waitT>0 && (procStruct[j].waitT!=procStruct[j].execT)){ //prob quando um proc nunca chega a ser executado! :/
                                         lostTime = procStruct[j].waitT;
-                                        printf("LOST TIME FOR T%d : %d\n",procStruct[j].procID, lostTime);
+                                        printf("[T%d] for %d units - L\n",procStruct[j].procID, lostTime);
+                                        procStruct[0].qtdlost++;
                                         lostTime=0;
                                         procStruct[j].waitT = procStruct[j].execT;
                                         j++;
                                     }
                                 }
                             }else if(Time >= periodLimit && procStruct[0].waitT>0){
-                                killTime = procStruct[0].waitT;
-                                printf("Kill TIME FOR T%d : %d\n",procStruct[0].procID, killTime);
-                                killTime=0;
-                                should_run=2;
+                                for (int j = 0; j < procCount; ++j) {
+                                    if(Time >= periodLimit && procStruct[j].waitT>0){
+                                        killTime = procStruct[j].waitT;
+                                        printf("[T%d] for %d units - K\n", procStruct[j].procID, killTime);
+                                        procStruct[j].qtdkilled++;
+                                        killTime = 0;
+                                        should_run = 2;
+                                    }
+                                }
                             }
                         }
+
+                    //FINISHED Time
+                        if(procStruct[0].waitT==0){
+                            printf("[T%d] for %d units - F\n",procStruct[0].procID, procStruct[0].execT);
+                            procStruct[0].qtdExec++;
+                        }
+
                         if(stopExec==1){
                             //printar o que ficou em HOLD!!
                             break;
@@ -233,19 +256,37 @@ int main(int argc, char* argv[]) {
                 }else if(procStruct[0].waitT<=0 || procStruct[0].waitT + Time <= periodLimit){ //caso o da vez esteja vazio
                     procStruct[0].waitT = procStruct[0].execT;
                     stopExec=0;
-                  //  printf("ENTREI: VAZIO=%d\n",stopExec);
+                      printf("ENTREI: VAZIO=%d\n",stopExec);
                 }
-                printStruct(procStruct,procCount);
+                //printStruct(procStruct,procCount);
             }
             else if(Time >= periodLimit){
                 should_run=2;
             }else if(notIdle==1 || checkAllExecute(procStruct,procCount)==0) { //idle time!! (all .waitT=0 and not waiting)
-                printf("TIME AFTER IDLE: %d\n",Time);
+              //  printf("TIME AFTER IDLE: %d\n",Time);
+                TimeIdle++;
                 Time++;
             }
+        }
+        printf("\n");
+        printf("LOST DEADLINES \n");
+        for (int i = 0; i < procCount; ++i) {
+            printf("[T%d] %d\n",procStruct[i].procID,procStruct[i].qtdlost);
+        }
 
+        printf("\n");
+        printf("COMPLETE EXECUTION \n");
+        for (int i = 0; i < procCount; ++i) {
+            printf("[T%d] %d\n",procStruct[i].procID,procStruct[i].qtdExec);
+        }
+
+        printf("\n");
+        printf("KILLED \n");
+        for (int i = 0; i < procCount; ++i) {
+            printf("[T%d] %d\n",procStruct[i].procID,procStruct[i].qtdkilled);
         }
     }
+
 //Error referentes ao argvs
     else if (argc == 1) {
         printf("Please, inform some input file\n");
