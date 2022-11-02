@@ -97,10 +97,18 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Sort para orden
                 temp = proc[j];
                 proc[j] = proc[i];
                 proc[i] = temp;
+            }else {
+                for (int k = 1; k < procCount; ++k) {
+                    if(proc[k].waitT>0 && proc[k-1].waitT<=0){
+                        temp = proc[k];
+                        proc[k] = proc[k-1];
+                        proc[k-1] = temp;
+                    }
+                }
             }
         }
     }
-    printStruct(proc,procCount);
+
 }
 
 int checkAllExecute(struct ProcStruct proc[], int procCount){
@@ -204,7 +212,7 @@ int main(int argc, char* argv[]) {
             if (procStruct[0].waitT>0 || (Time%procStruct[0].periodT==0)){
                 printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
                 for (int i = 0; i < procCount; ++i) {
-                    if ((Time % procStruct[i].periodT == 0) && procStruct[i].waitT == 0) { //creio que o erro possa estar aqui!!
+                    if ((Time % procStruct[i].periodT == 0 || procStruct[i].periodT ==Time) && procStruct[i].waitT == 0) { //creio que o erro possa estar aqui!!
                         procStruct[i].waitT = procStruct[i].execT;
                     }
                 }
@@ -213,7 +221,7 @@ int main(int argc, char* argv[]) {
                     while(procStruct[0].waitT <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
                       //  printf("\t\tENTREI\n");
                         for (int i = 0; i < procCount; ++i) {
-                            if ((Time % procStruct[i].periodT == 0) && procStruct[i].waitT == 0) { //creio que o erro possa estar aqui!!
+                            if ((Time % procStruct[i].periodT == 0 || procStruct[i].periodT ==Time) && procStruct[i].waitT == 0) { //creio que o erro possa estar aqui!!
                                 procStruct[i].waitT = procStruct[i].execT;
                             }
                         }
@@ -226,7 +234,7 @@ int main(int argc, char* argv[]) {
                         procStruct[0].waitT--;
                         printf("\tTIME executando: %d\n",Time);
 
-                        //Var para auxiliar o calc de tempo de cada execução, precisamente no F
+                        //Var para auxiliar o calc de tempo de cada execução, precisamente no F //Not Needded!
                             //TimeExecAux = procStruct[0].waitT;
 
                         //for para verificar um de prioridade MAIOR!
@@ -305,7 +313,7 @@ int main(int argc, char* argv[]) {
             else if(Time >= periodLimit){
                 should_run=2;
             }else if(notIdle==1 || checkAllExecute(procStruct,procCount)==0) { //idle time!! (all .waitT=0 and not waiting)
-              //  printf("TIME AFTER IDLE: %d\n",Time);
+                printf("TIME AFTER IDLE: %d\n",Time);
                 TimeIdle++;
                 Time++;
             }
