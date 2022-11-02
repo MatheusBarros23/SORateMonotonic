@@ -2,9 +2,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <ctype.h>
-#include <fcntl.h>
 
 FILE *pnt;
 FILE *arq;
@@ -21,7 +18,7 @@ FILE *arq;
 struct ProcStruct
 {
     int size;
-    int procID; //QUANDO PRINTAR COLOCAR O T antes do ID!! VERIFICAR ISSO
+    char procID[MAX_LINE]; //QUANDO PRINTAR COLOCAR O T antes do ID!! VERIFICAR ISSO - RESOLVIDO, voltei para string
     int periodT;
     int execT;
 
@@ -76,7 +73,7 @@ char **splitString(char *string, int *cmdCount) {
 void printStruct(struct ProcStruct proc[], int procCount){
     //verificar a struct
     for (int i = 0; i < procCount; ++i) {
-        printf("procStruct[%d].procID: T%d\n",i,procStruct[i].procID);
+        printf("procStruct[%d].procID: %s\n",i,procStruct[i].procID);
         printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
         printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
         printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
@@ -175,8 +172,8 @@ int main(int argc, char* argv[]) {
                 printf("periodLimit: %d\n", periodLimit);
                 h++;
             } else {
-                memmove(&procString[char2Del], &procString[char2Del + 1],
-                        strlen(procString) - char2Del); //remover o T para só trabalhar com INT!! BUG com String
+             //   memmove(&procString[char2Del], &procString[char2Del + 1],
+               //         strlen(procString) - char2Del); //remover o T para só trabalhar com INT!! BUG com String
                 int procCount;
                 char **procArray = malloc(*procString * sizeof(char *));
                 procArray = splitString(procString, &procCount);
@@ -184,8 +181,8 @@ int main(int argc, char* argv[]) {
                 for (int i = 0; i <= 2; ++i) {
                     //  printf("procID: %s\n",procArray[i]);
                 }
-
-                procStruct[procs].procID = atoi(procArray[0]);
+                sprintf(procStruct[procs].procID, "%s", procArray[0]);
+               // procStruct[procs].procID = atoi(procArray[0]); //Prob de trabalhar com string RESOLVIDO!
                 procStruct[procs].periodT = atoi(procArray[1]);
                 procStruct[procs].execT = atoi(procArray[2]);
                 procStruct[procs].state = HOLD;
@@ -212,7 +209,7 @@ int main(int argc, char* argv[]) {
 
             //execution!
             if (procStruct[0].waitT>0 || (Time%procStruct[0].periodT==0)){
-                printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
+                printf(" ENTRO P/ EXECUTAR o %s\n",procStruct[0].procID); //estou entrando
                 for (int i = 0; i < procCount; ++i) {
                     if ((Time % procStruct[i].periodT == 0 || procStruct[i].periodT ==Time) && procStruct[i].waitT == 0) { //creio que o erro possa estar aqui!!
                         procStruct[i].waitT = procStruct[i].execT;
@@ -252,9 +249,9 @@ int main(int argc, char* argv[]) {
                                 stopExec=1;
                                 printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
                              //chegou prioridade! e guarda o wait!! - PENSAR COMO MOSTRAR ISSO!! QUANDO TERMINA NAO ENTRA AQUI!!
-                                printf("[T%d] for %d units - H\n",procStruct[0].procID,procStruct[0].execT-procStruct[0].waitT);
+                                printf("[%s] for %d units - H\n",procStruct[0].procID,procStruct[0].execT-procStruct[0].waitT);
                                 if(procStruct[0].waitT >0){ //só printar caso ainda tenha tempo!! Caso não, vai para as proximas condiçoes...
-                                    fprintf(arq,"[T%d] for %d units - H\n",procStruct[0].procID,  procStruct[0].execT-procStruct[0].waitT);
+                                    fprintf(arq,"[%s] for %d units - H\n",procStruct[0].procID,  procStruct[0].execT-procStruct[0].waitT);
                                 }
                           //verificar novo arrival!! COM WAITTIME
                             }
@@ -263,8 +260,8 @@ int main(int argc, char* argv[]) {
                                 for (int j = 0; j < procCount; ++j) {
                                     if(Time%procStruct[j].periodT==0 && procStruct[j].waitT>0 && (procStruct[j].waitT!=procStruct[j].execT)){ //prob quando um proc nunca chega a ser executado! :/
                                         lostTime = procStruct[j].waitT;
-                                        printf("[T%d] for %d units - L\n",procStruct[j].procID, lostTime);
-                                        fprintf(arq,"[T%d] for %d units - L\n",procStruct[j].procID, lostTime);
+                                        printf("[%s] for %d units - L\n",procStruct[j].procID, lostTime);
+                                        fprintf(arq,"[%s] for %d units - L\n",procStruct[j].procID, lostTime);
                                         procStruct[0].qtdlost++;
                                         lostTime=0;
                                         procStruct[j].waitT = procStruct[j].execT;
@@ -284,7 +281,7 @@ int main(int argc, char* argv[]) {
                                         if((procStruct[j].execT - killTime < 0 || procStruct[j].waitT == procStruct[j].execT) && Time == periodLimit){ //ou seja, não tiver sido executado... nem printo!
 
                                         }else if(Time <= periodLimit){
-                                            fprintf(arq,"[T%d] for %d units - K\n", procStruct[j].procID, procStruct[j].execT - killTime);
+                                            fprintf(arq,"[%s] for %d units - K\n", procStruct[j].procID, procStruct[j].execT - killTime);
                                             if(procStruct[j].qtdkilled<1 ){
                                                 procStruct[j].qtdkilled++;
                                                 killTime = 0;
@@ -309,16 +306,16 @@ int main(int argc, char* argv[]) {
                           //  fprintf(arq,"TIME [T%d] for %d TIME - F\n",procStruct[0].procID, Time);
                             if(procStruct[0].execT - mdc(Time,procStruct[0].periodT)!=0 && Time%procStruct[0].periodT!=procStruct[0].execT){ //pela logica que fiz, esse calculo funcina melhor depois que passam o Tempo dos periodos!! por isso o if
                                 if(procStruct[0].execT - mdc(Time,procStruct[0].periodT) <0){
-                                    fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID,procStruct[0].execT );
+                                    fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID,procStruct[0].execT );
                                 }else {
-                                    fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID, procStruct[0].execT - mdc(Time,procStruct[0].periodT));
+                                    fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID, procStruct[0].execT - mdc(Time,procStruct[0].periodT));
                                 }
 
                             }else if(Time%procStruct[0].periodT==procStruct[0].execT){
-                                fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID, procStruct[0].holdT);
+                                fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID, procStruct[0].holdT);
                                 procStruct[0].holdT = 0;
                             }else{
-                                fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID, mdc(Time,procStruct[0].periodT));
+                                fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID, mdc(Time,procStruct[0].periodT));
                             }
                             procStruct[0].qtdExec++;
                         }
@@ -357,19 +354,19 @@ int main(int argc, char* argv[]) {
         fprintf(arq,"\n");
         fprintf(arq,"LOST DEADLINES \n");
         for (int i = 0; i < procCount; ++i) {
-            fprintf(arq,"[T%d] %d\n",procStruct[i].procID,procStruct[i].qtdlost);
+            fprintf(arq,"[%s] %d\n",procStruct[i].procID,procStruct[i].qtdlost);
         }
 
         fprintf(arq,"\n");
         fprintf(arq,"COMPLETE EXECUTION \n");
         for (int i = 0; i < procCount; ++i) {
-            fprintf(arq,"[T%d] %d\n",procStruct[i].procID,procStruct[i].qtdExec);
+            fprintf(arq,"[%s] %d\n",procStruct[i].procID,procStruct[i].qtdExec);
         }
 
         fprintf(arq,"\n");
         fprintf(arq,"KILLED \n");
         for (int i = 0; i < procCount; ++i) {
-            fprintf(arq,"[T%d] %d\n",procStruct[i].procID,procStruct[i].qtdkilled);
+            fprintf(arq,"[%s] %d\n",procStruct[i].procID,procStruct[i].qtdkilled);
         }
 
         fclose(arq);

@@ -2,11 +2,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <ctype.h>
-#include <fcntl.h>
 
 FILE *pnt;
+FILE *arq;
 
 #define MAX_LINE 20
 #define MAX_CMDS 20
@@ -20,7 +18,7 @@ FILE *pnt;
 struct ProcStruct
 {
     int size;
-    int procID; //QUANDO PRINTAR COLOCAR O T antes do ID!! VERIFICAR ISSO
+    char procID[MAX_LINE]; //QUANDO PRINTAR COLOCAR O T antes do ID!! VERIFICAR ISSO
     int periodT;
     int execT;
 
@@ -50,7 +48,8 @@ int lostTime=0;
 int killTime=0;
 int temp=0;
 int auxCheckExec;
-
+int TimeExecAux=0;
+int arrivalFinal=0;
 
 int should_run=1;
 
@@ -71,24 +70,45 @@ char **splitString(char *string, int *cmdCount) {
     return array;
 }
 
-void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
-    struct ProcStruct temp;                                 //ENTENDER QUEM EH O i e o J!!
+void printStruct(struct ProcStruct proc[], int procCount){
+    //verificar a struct
+    for (int i = 0; i < procCount; ++i) {
+        printf("procStruct[%d].procID: %s\n",i,procStruct[i].procID);
+        printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
+        printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
+        printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
+        printf("procStruct[%d].holdT: %d\n",i,procStruct[i].holdT);
+        printf("procStruct[%d].qtdKilled: %d\n",i,procStruct[i].qtdkilled);
+    }
+}
+
+void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Sort para ordenar a Struct pelo periodo
+    struct ProcStruct temp;
     for (int i = 0; i < procCount-1; ++i) {
-        for (int j = i+1; j < procCount; ++j) { //FAZER% ISSO SEPARADO!! NAO DA NO MESMO CAMPO!!
+        for (int j = i+1; j < procCount; ++j) {
             if(proc[i].periodT > proc[j].periodT && proc[i].waitT>0){
                 temp = proc[i];
                 proc[i] = proc[j];
                 proc[j] = temp;
-            }else if(proc[i].waitT<=0){
+            }
+            else if(proc[i].waitT <= 0){
                 temp = proc[j];
                 proc[j] = proc[i];
                 proc[i] = temp;
+            }else { //por algum motivo o t4 nunca vai pra frente!! PQ?
+                for (int k = 1; k < procCount; ++k) {
+                    if(proc[k].waitT>0 && proc[k-1].waitT<=0){
+                        temp = proc[k];
+                        proc[k] = proc[k-1];
+                        proc[k-1] = temp;
+                    }
+                }
             }
         }
     }
 }
 
-int checkAllExecute(struct ProcStruct proc[], int procCount){  //Selection Sort para ordenar a Struct pelo periodo
+int checkAllExecute(struct ProcStruct proc[], int procCount){
     for (int i = 0; i < procCount; ++i) {
         if(procStruct[i].waitT!=0){
             return i;
@@ -97,18 +117,19 @@ int checkAllExecute(struct ProcStruct proc[], int procCount){  //Selection Sort 
     return 0;
 }
 
+int mdc(int num1, int num2) {
+    int resto;
+    do {
+        resto = num1 % num2;
+        num1 = num2;
+        num2 = resto; //Podia ser recursividade, mas preferi assim por enq
+    } while (resto != 0);
+    return num1;
+}
+
 //preciso PROCURAR pelo maior prioridade com tempo de execução maior que 0
 
-void printStruct(struct ProcStruct proc[], int procCount){
-    //verificar a struct
-    for (int i = 0; i < procCount; ++i) {
-        printf("procStruct[%d].procID: T%d\n",i,procStruct[i].procID);
-        printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
-        printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
-        printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
-        //printf("procStruct[%d].qtdExec: %d\n",i,procStruct[i].qtdExec);
-    }
-}
+
 
 
 int main(int argc, char* argv[]) {
@@ -139,18 +160,20 @@ int main(int argc, char* argv[]) {
         char *procString = malloc(MAX_LINE * sizeof(char *)); //criar dinamicamente array
 
         pnt = fopen(argv[1], "r");
+        arq = fopen("rate_mprb.out", "w+");
+
         int h = 0;
         int procs = 0;
         while (fscanf(pnt, "%[^\n] ", procString) != EOF) {
             // printf("procSting: %s\n",procString);
-            int char2Del = 0;
+          // int char2Del = 0;
             if (h == 0) {
                 periodLimit = atoi(procString);
                 printf("periodLimit: %d\n", periodLimit);
                 h++;
             } else {
-                memmove(&procString[char2Del], &procString[char2Del + 1],
-                        strlen(procString) - char2Del); //remover o T para só trabalhar com INT!! BUG com String
+               // memmove(&procString[char2Del], &procString[char2Del + 1],
+               //         strlen(procString) - char2Del); //remover o T para só trabalhar com INT!! BUG com String
                 int procCount;
                 char **procArray = malloc(*procString * sizeof(char *));
                 procArray = splitString(procString, &procCount);
@@ -158,8 +181,8 @@ int main(int argc, char* argv[]) {
                 for (int i = 0; i <= 2; ++i) {
                     //  printf("procID: %s\n",procArray[i]);
                 }
-
-                procStruct[procs].procID = atoi(procArray[0]);
+                sprintf(procStruct[procs].procID, "%s", procArray[0]);
+                //procStruct[procs].procID = procArray[0];
                 procStruct[procs].periodT = atoi(procArray[1]);
                 procStruct[procs].execT = atoi(procArray[2]);
                 procStruct[procs].state = HOLD;
@@ -176,81 +199,6 @@ int main(int argc, char* argv[]) {
 
         //verificar a struct
         printStruct(procStruct,procCount);
-
-        //EXECUTION BY RATE
-        while(should_run==1){
-            //para saber qual pode ser executado agora!! (sempre o primeiro!)
-            sortByArrivalT(procStruct, procCount);
-            //execution!
-            if (procStruct[0].waitT>0 || (Time%procStruct[0].periodT==0)){
-                printf(" ENTRO P/ EXECUTAR o T%d\n",procStruct[0].procID); //estou entrando
-
-
-                for (int i = 0; i < procCount; ++i) {
-                    if ((Time % procStruct[i].periodT == 0) && procStruct[i].waitT == 0 && checkAllExecute(procStruct,procCount)==0) { //creio que o erro possa estar aqui!!
-                        procStruct[i].waitT = procStruct[i].execT;
-                    }
-                }
-
-                if(procStruct[0].waitT + Time <= periodLimit || procStruct[0].waitT>0){ //para quando conseguir executar normal (sem deadline, por enquanto)
-                    //Só entra enquanto for menor dq o periodLimit! Vou fazer o tratamento de quanto falta, no else if()
-                    while(procStruct[0].waitT+1 <= procStruct[checkAllExecute(procStruct, procCount)].periodT && procStruct[0].waitT > 0){
-                        printf("\t\tENTREI\n");
-                        Time++;
-                        procStruct[0].waitT--;
-                        printf("\tTIME executando: %d\n",Time);
-                        for (int i = 1; i < procCount; ++i) {
-                            printf("\tTIME FOR CONDICIONAL: %d\n",Time);
-                            if(procStruct[0].periodT > procStruct[i].periodT && Time%procStruct[i].periodT==0 ){ //Caso executando encontre um de prioridade MAIOR!
-                                procStruct[i].waitT = procStruct[i].execT;
-                                stopExec=1;
-                                printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
-                                //verificar novo arrival!! COM WAITTIME
-                            }
-                            else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 || checkAllExecute(procStruct,procCount)!=0){
-                                //PROB AQUI!!
-                                for (int j = 0; j < procCount; ++j) {
-                                    if(Time%procStruct[j].periodT==0 && procStruct[j].waitT>0 && (procStruct[j].waitT!=procStruct[j].execT)){ //prob quando um proc nunca chega a ser executado! :/
-                                        lostTime = procStruct[j].waitT;
-                                        printf("LOST TIME FOR T%d : %d\n",procStruct[j].procID, lostTime);
-                                        lostTime=0;
-                                        procStruct[j].waitT = procStruct[j].execT;
-                                        j++;
-                                    }
-                                }
-                            }else if(Time >= periodLimit && procStruct[0].waitT>0){
-                                killTime = procStruct[0].waitT;
-                                printf("Kill TIME FOR T%d : %d\n",procStruct[0].procID, killTime);
-                                killTime=0;
-                                should_run=2;
-                            }
-                        }
-                        if(stopExec==1){
-                            //printar o que ficou em HOLD!!
-                            break;
-                        }
-                    }
-                }else if(procStruct[0].waitT<=0 || procStruct[0].waitT + Time <= periodLimit){ //caso o da vez esteja vazio
-                    procStruct[0].waitT = procStruct[0].execT;
-                    stopExec=0;
-                    //  printf("ENTREI: VAZIO=%d\n",stopExec);
-                }
-                printStruct(procStruct,procCount);
-            }
-            else if(Time >= periodLimit){
-                should_run=2;
-            }else if(notIdle==1 || checkAllExecute(procStruct,procCount)==0) { //idle time!! (all .waitT=0 and not waiting)
-                printf("TIME AFTER IDLE: %d\n",Time);
-                Time++;
-            }
-
-        }
-    }
-//Error referentes ao argvs
-    else if (argc == 1) {
-        printf("Please, inform some input file\n");
-    } else if (argc > 2) {
-        printf("Sorry, but more files were informed than supported\n");
     }
     return 0;
 }
