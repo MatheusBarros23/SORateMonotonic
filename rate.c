@@ -80,6 +80,7 @@ void printStruct(struct ProcStruct proc[], int procCount){
         printf("procStruct[%d].periodT: %d\n",i,procStruct[i].periodT);
         printf("procStruct[%d].execT: %d\n",i,procStruct[i].execT);
         printf("procStruct[%d].waitT: %d\n",i,procStruct[i].waitT);
+        printf("procStruct[%d].holdT: %d\n",i,procStruct[i].holdT);
         printf("procStruct[%d].qtdKilled: %d\n",i,procStruct[i].qtdkilled);
     }
 }
@@ -235,6 +236,9 @@ int main(int argc, char* argv[]) {
                         TimeIdle=0;
                         procStruct[0].waitT--;
                         procStruct[0].holdT++;
+                        if(procStruct[0].holdT>procStruct[0].execT){
+                            procStruct[0].holdT = procStruct[0].execT;
+                        }
                         printf("\tTIME executando: %d\n",Time);
 
                         //Var para auxiliar o calc de tempo de cada execução, precisamente no F //Not Needded!
@@ -247,9 +251,11 @@ int main(int argc, char* argv[]) {
                                 procStruct[i].waitT = procStruct[i].execT;
                                 stopExec=1;
                                 printf("ENTREI PRIORIDADE: stopExec = %d\n",stopExec);
-                             //chegou prioridade! e guarda o wait!! - PENSAR COMO MOSTRAR ISSO!!
+                             //chegou prioridade! e guarda o wait!! - PENSAR COMO MOSTRAR ISSO!! QUANDO TERMINA NAO ENTRA AQUI!!
                                 printf("[T%d] for %d units - H\n",procStruct[0].procID,procStruct[0].execT-procStruct[0].waitT);
-                                fprintf(arq,"[T%d] for %d units - H\n",procStruct[0].procID,  procStruct[0].execT-procStruct[0].waitT);
+                                if(procStruct[0].waitT >0){ //só printar caso ainda tenha tempo!! Caso não, vai para as proximas condiçoes...
+                                    fprintf(arq,"[T%d] for %d units - H\n",procStruct[0].procID,  procStruct[0].execT-procStruct[0].waitT);
+                                }
                           //verificar novo arrival!! COM WAITTIME
                             }
                             else if(Time%procStruct[0].periodT==0 && procStruct[0].waitT>0 && procStruct[0].waitT+Time<periodLimit || checkAllExecute(procStruct,procCount)!=0){
@@ -300,9 +306,14 @@ int main(int argc, char* argv[]) {
                     //FINISHED Time
                         if(procStruct[0].waitT==0 && should_run==1 && Time<periodLimit){
                             //EDITAR ISSO!! Printar só o exec time não faz sentido pq tem o lost time...
-                         //   fprintf(arq,"TIME [T%d] for %d TIME - F\n",procStruct[0].procID, Time);
+                          //  fprintf(arq,"TIME [T%d] for %d TIME - F\n",procStruct[0].procID, Time);
                             if(procStruct[0].execT - mdc(Time,procStruct[0].periodT)!=0 && Time%procStruct[0].periodT!=procStruct[0].execT){ //pela logica que fiz, esse calculo funcina melhor depois que passam o Tempo dos periodos!! por isso o if
-                                fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID, procStruct[0].execT - mdc(Time,procStruct[0].periodT));
+                                if(procStruct[0].execT - mdc(Time,procStruct[0].periodT) <0){
+                                    fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID,procStruct[0].execT );
+                                }else {
+                                    fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID, procStruct[0].execT - mdc(Time,procStruct[0].periodT));
+                                }
+
                             }else if(Time%procStruct[0].periodT==procStruct[0].execT){
                                 fprintf(arq,"[T%d] for %d units - F\n",procStruct[0].procID, procStruct[0].holdT);
                                 procStruct[0].holdT = 0;
