@@ -95,7 +95,7 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Sort para orden
                 temp = proc[j];
                 proc[j] = proc[i];
                 proc[i] = temp;
-            }else { //por algum motivo o t4 nunca vai pra frente!! PQ?
+            }else { //por algum motivo o t4 nunca vai pra frente!! PQ? #Fazer um for especifico para quando tiver situação dos 4... Ou só um elseif desse if..
                 for (int k = 1; k < procCount; ++k) {
                     if(proc[k].waitT>0 && proc[k-1].waitT<=0){
                         temp = proc[k];
