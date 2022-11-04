@@ -27,7 +27,7 @@ struct ProcStruct
     //att to save timeStamps
     int holdT;
     int killedT;
-    int lostT;
+    int finishT;
     int waitT;
 
     //att to store limits
@@ -46,6 +46,7 @@ int stopExec=0;
 int notIdle=0;
 int lostTime=0;
 int killTime=0;
+int finishTimeH=0;
 int temp=0;
 int auxCheckExec;
 int TimeExecAux=0;
@@ -252,6 +253,7 @@ int main(int argc, char* argv[]) {
                                 printf("[%s] for %d units - H\n",procStruct[0].procID,procStruct[0].execT-procStruct[0].waitT);
                                 if(procStruct[0].waitT >0){ //só printar caso ainda tenha tempo!! Caso não, vai para as proximas condiçoes...
                                     fprintf(arq,"[%s] for %d units - H\n",procStruct[0].procID,  procStruct[0].execT-procStruct[0].waitT);
+                                    procStruct[0].finishT = procStruct[0].execT-procStruct[0].waitT;
                                 }
                           //verificar novo arrival!! COM WAITTIME
                             }
@@ -281,7 +283,7 @@ int main(int argc, char* argv[]) {
                                         if((procStruct[j].execT - killTime < 0 || procStruct[j].waitT == procStruct[j].execT) && Time == periodLimit){ //ou seja, não tiver sido executado... nem printo!
 
                                         }else if(Time <= periodLimit){
-                                            fprintf(arq,"[%s] for %d units - K\n", procStruct[j].procID, procStruct[j].execT - killTime);
+                                            fprintf(arq,"[%s] for %d units - K\n", procStruct[j].procID, procStruct[j].execT - killTime); //Resolver o prob de printar 2x no input4.txt
                                             if(procStruct[j].qtdkilled<1 ){
                                                 procStruct[j].qtdkilled++;
                                                 killTime = 0;
@@ -289,12 +291,10 @@ int main(int argc, char* argv[]) {
                                         }else if(procStruct[j].qtdkilled<1 ){
                                             procStruct[j].qtdkilled++;
                                             killTime = 0;
-
                                         }else{
                                             should_run = 2;
                                             killTime = 0;
                                         }
-                                        killTime = 0;
                                     }
                                 }
                             }
@@ -308,7 +308,7 @@ int main(int argc, char* argv[]) {
                                 if(procStruct[0].execT - mdc(Time,procStruct[0].periodT) <0){
                                     fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID,procStruct[0].execT );
                                 }else {
-                                    fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID, procStruct[0].execT - mdc(Time,procStruct[0].periodT));
+                                    fprintf(arq,"[%s] for %d units - F\n",procStruct[0].procID, procStruct[0].execT-procStruct[0].finishT); //AQUI O ERRO, quando vem do lost!
                                 }
 
                             }else if(Time%procStruct[0].periodT==procStruct[0].execT){
