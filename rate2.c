@@ -108,6 +108,19 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Sort para orden
     }
 }
 
+int comparator(const void *a, const void *b)
+{
+    struct ProcStruct *periodA = (struct ProcStruct *)a;
+    struct ProcStruct *periodB = (struct ProcStruct *)b;
+
+    if(periodA->periodT < periodB->periodT && periodA->waitT > 0){
+        return (periodA->periodT - periodB->periodT);
+    }else if(periodA->periodT < periodB->periodT && periodA->waitT < 0){
+        return (periodB->periodT - periodA->periodT);
+    }
+
+}
+
 int checkAllExecute(struct ProcStruct proc[], int procCount){
     for (int i = 0; i < procCount; ++i) {
         if(procStruct[i].waitT!=0){
@@ -195,7 +208,7 @@ int main(int argc, char* argv[]) {
         }
         fclose(pnt);
 
-        sortByArrivalT(procStruct, procCount);
+        qsort(procStruct,procCount,sizeof(procStruct[0]),comparator);
 
         //verificar a struct
         printStruct(procStruct,procCount);
