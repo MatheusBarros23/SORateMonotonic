@@ -47,7 +47,7 @@ int notIdle=0;
 int lostTime=0;
 int killTime=0;
 int finishTimeH=0;
-int temp=0;
+char *temp;
 int auxCheckExec;
 int TimeExecAux=0;
 int arrivalFinal=0;
@@ -104,6 +104,18 @@ void sortByArrivalT(struct ProcStruct proc[], int procCount){  //Sort para orden
                         proc[k-1] = temp;
                     }
                 }
+            }
+        }
+    }
+}
+void sortByArrivalPlus(struct ProcStruct proc[], int procCount){  //Sort para ordenar a Struct pelo periodo
+    struct ProcStruct temp;
+    for (int i = 0; i < procCount-1; ++i) {
+        for (int j = i+1; j < procCount; ++j) {
+            if(proc[i].periodT > proc[j].periodT){
+                temp = proc[i];
+                proc[i] = proc[j];
+                proc[j] = temp;
             }
         }
     }
@@ -282,12 +294,13 @@ int main(int argc, char* argv[]) {
                                         killTime = procStruct[j].waitT;
                                         if((procStruct[j].execT - killTime < 0 || procStruct[j].waitT == procStruct[j].execT) && Time == periodLimit){ //ou seja, não tiver sido executado... nem printo!
 
-                                        }else if(Time <= periodLimit){
+                                        }else if(Time <= periodLimit && temp != procStruct[j].procID){ //&& temp != procStruct[j].procID - para evitar prints iguais!!
                                             fprintf(arq,"[%s] for %d units - K\n", procStruct[j].procID, procStruct[j].execT - killTime); //Resolver o prob de printar 2x no input4.txt
                                             if(procStruct[j].qtdkilled<1 ){
                                                 procStruct[j].qtdkilled++;
                                                 killTime = 0;
                                             }
+                                            temp = procStruct[j].procID;
                                         }else if(procStruct[j].qtdkilled<1 ){
                                             procStruct[j].qtdkilled++;
                                             killTime = 0;
@@ -366,7 +379,11 @@ int main(int argc, char* argv[]) {
         fprintf(arq,"\n");
         fprintf(arq,"KILLED \n");
         for (int i = 0; i < procCount; ++i) {
-            fprintf(arq,"[%s] %d\n",procStruct[i].procID,procStruct[i].qtdkilled);
+            if(i+1==procCount){
+                fprintf(arq,"[%s] %d",procStruct[i].procID,procStruct[i].qtdkilled);
+            }else{
+                fprintf(arq,"[%s] %d\n",procStruct[i].procID,procStruct[i].qtdkilled);
+            }
         }
 
         fclose(arq);
@@ -385,6 +402,6 @@ int main(int argc, char* argv[]) {
 
 //time + execT == 165 - KILL
 
-/*AINDA FALTA O: IDLE
-                 Killed
+/*AINDA FALTA:
+                Corrigir +4
 */
