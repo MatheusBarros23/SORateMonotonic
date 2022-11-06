@@ -353,10 +353,7 @@ int main(int argc, char* argv[]) {
                                     procStruct[0].finishT=0;
                                 }
                                 procStruct[0].qtdExec++;
-                            }else{
-
                             }
-
                             if (stopExec == 1) {
                                 break;
                             }
