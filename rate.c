@@ -387,8 +387,8 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-        printStruct(procStruct,procCount);
-        printf("FORA Time: %d\n",Time);
+      //  printStruct(procStruct,procCount);
+       // printf("FORA Time: %d\n",Time);
 
         fprintf(arq,"\n");
         fprintf(arq,"LOST DEADLINES \n");
