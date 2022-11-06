@@ -338,7 +338,8 @@ int main(int argc, char* argv[]) {
                             }
 
                             //FINISHED Time
-                            if (procStruct[0].waitT == 0 && should_run == 1 && Time < periodLimit) {
+                            if (procStruct[0].waitT == 0 && should_run == 1 && Time <= periodLimit) {
+                                printf("F Time: %d\n",Time);
                                 //  fprintf(arq,"TIME [T%d] for %d TIME - F\n",procStruct[0].procID, Time); //usando tais condições para printar!
                                 if (Time % procStruct[0].periodT !=procStruct[0].execT) { //Aqui utilizava ainda o mdc para diminuir e fazer um calculo com o .execT, mas era uma solucao "viciada"
                                     fprintf(arq, "[%s] for %d units - F\n", procStruct[0].procID,procStruct[0].execT- procStruct[0].finishT);
@@ -352,6 +353,8 @@ int main(int argc, char* argv[]) {
                                     procStruct[0].finishT=0;
                                 }
                                 procStruct[0].qtdExec++;
+                            }else{
+
                             }
 
                             if (stopExec == 1) {
@@ -362,10 +365,10 @@ int main(int argc, char* argv[]) {
                     }
 
                   //  printStruct(procStruct, procCount);
-                } else if (Time >= periodLimit) {
+                } else if (Time > periodLimit) {
                     should_run = 2;
                 } else if (notIdle == 1 || checkExecute(procStruct, procCount) == 0) { //idle time!! (all .waitT=0 and not waiting)
-                    //  printf("TIME AFTER IDLE: %d\n",Time);
+                      printf("TIME AFTER IDLE: %d\n",Time);
                     TimeIdle++;
                     Time++;
                     //need a arrival CHECK!!
@@ -373,8 +376,11 @@ int main(int argc, char* argv[]) {
                         if (Time == procStruct[k].periodT && procStruct[k].waitT == 0 && should_run == 1) {
                             procStruct[k].waitT = procStruct[k].execT;
                             //  printf("TO AQUI1\n");
-                        } else if (Time % procStruct[k].periodT == 0 && procStruct[k].waitT == 0 && Time >= procStruct[k].periodT && should_run == 1) {
+                        } else if (Time % procStruct[k].periodT == 0 && procStruct[k].waitT == 0 && Time >= procStruct[k].periodT && should_run == 1) { //chegou depois!!
                             procStruct[k].waitT = procStruct[k].execT;
+                            if(procStruct[k].waitT==1 && procStruct[k].qtdkilled<1){
+                                procStruct[k].qtdkilled++;
+                            }
                             //  printf("TO AQUI2\n");
                         }
                     }
@@ -384,6 +390,8 @@ int main(int argc, char* argv[]) {
                 }
             }
 
+        printStruct(procStruct,procCount);
+        printf("FORA Time: %d\n",Time);
 
         fprintf(arq,"\n");
         fprintf(arq,"LOST DEADLINES \n");
