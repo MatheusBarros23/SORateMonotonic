@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
             }
         }
         fclose(pnt);
-        printf("Processos: %d\n", procCount);
+      //  printf("Processos: %d\n", procCount);
 
         char *procString = malloc(MAX_LINE * sizeof(char *)); //criar dinamicamente array
 
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
             // printf("procSting: %s\n",procString);
             if (h == 0) {
                 periodLimit = atoi(procString);
-                printf("Time Limit: %d\n", periodLimit);
+             //   printf("Time Limit: %d\n", periodLimit);
                 h++;
             } else {
                 int procCount;
@@ -273,12 +273,11 @@ int main(int argc, char* argv[]) {
                                     //verificar novo arrival!! COM WAITTIME
                                 } else if (Time % procStruct[0].periodT == 0 && procStruct[0].waitT > 0 && procStruct[0].waitT + Time < periodLimit || checkExecute(procStruct, procCount) != 0) {
 
-
                                     for (int j = 0; j < procCount; ++j) {
                                         if (Time % procStruct[j].periodT == 0 && procStruct[j].waitT > 0 && (procStruct[j].waitT != procStruct[j].execT)) {
                                            // printStruct(procStruct,procCount);
                                             lostTime = procStruct[j].holdT - procStruct[j].finishT;
-                                            printf("[%s] for %d units - L\n", procStruct[j].procID, lostTime);
+                                           // printf("[%s] for %d units - L\n", procStruct[j].procID, lostTime);
                                             fprintf(arq, "[%s] for %d units - L\n", procStruct[j].procID, lostTime);
                                             procStruct[j].qtdlost++;
                                             lostTime = 0;
@@ -339,7 +338,7 @@ int main(int argc, char* argv[]) {
 
                             //FINISHED Time
                             if (procStruct[0].waitT == 0 && should_run == 1 && Time <= periodLimit) {
-                                printf("F Time: %d\n",Time);
+                             //   printf("F Time: %d\n",Time);
                                 //  fprintf(arq,"TIME [T%d] for %d TIME - F\n",procStruct[0].procID, Time); //usando tais condições para printar!
                                 if (Time % procStruct[0].periodT !=procStruct[0].execT) { //Aqui utilizava ainda o mdc para diminuir e fazer um calculo com o .execT, mas era uma solucao "viciada"
                                     fprintf(arq, "[%s] for %d units - F\n", procStruct[0].procID,procStruct[0].execT- procStruct[0].finishT);
@@ -365,7 +364,7 @@ int main(int argc, char* argv[]) {
                 } else if (Time > periodLimit) {
                     should_run = 2;
                 } else if (notIdle == 1 || checkExecute(procStruct, procCount) == 0) { //idle time!! (all .waitT=0 and not waiting)
-                      printf("TIME AFTER IDLE: %d\n",Time);
+                     // printf("TIME AFTER IDLE: %d\n",Time);
                     TimeIdle++;
                     Time++;
                     //need a arrival CHECK!!
