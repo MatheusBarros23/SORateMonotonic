@@ -386,7 +386,6 @@ int main(int argc, char* argv[]) {
                     printStruct(procStruct, procCount);*/
                 }
             }
-
       //  printStruct(procStruct,procCount);
        // printf("FORA Time: %d\n",Time);
 
